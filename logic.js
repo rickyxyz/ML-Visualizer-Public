@@ -19,26 +19,31 @@ function addData(i, x, y){
 
 function drawModeRed(){
     document.getElementById('mode').textContent = "Draw Mode Red";
+    document.getElementById('description').textContent = "Click on the graph to add red data point";
     clickMode = 'drawRed';
 }
 
 function drawModeBlue(){
     document.getElementById('mode').textContent = "Draw Mode Blue";
+    document.getElementById('description').textContent = "Click on the graph to add blue data point";
     clickMode = 'drawBlue';
 }
 
 function knnMode(){
     document.getElementById('mode').textContent = "KNN Mode";
+    document.getElementById('description').textContent = "Click on the graph to do a KNN classification";
     clickMode = 'KNN';
 }
 
 function deleteMode(){
     document.getElementById('mode').textContent = "Delete Mode";
+    document.getElementById('description').textContent = "Click on existing data point or the KNN point to delete it";
     clickMode = 'delete';
 }
 
 function viewMode(){
     document.getElementById('mode').textContent = "View Mode";
+    document.getElementById('description').textContent = "Click on existing data point to move it";
     clickMode = 'view';
 }
 

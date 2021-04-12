@@ -34,16 +34,20 @@
                 <canvas id="myChart" class="chart"></canvas>
             </div>
             <div class="tool-container">
+                Manual input only inputs red data point
+                <br>
                 input X: <input type="text" name="inputX" id="inputX">
                 <br>
                 input Y: <input type="text" name="inputY" id="inputY">
                 <br>
                 <button onclick="getInput()">Input</button>
-                <br>
-                <button onclick="linearRegression()">Linear Regression</button>
+                <br><br>
+                Linear regression only calculate the red data points<button onclick="linearRegression()">Linear Regression</button>
                 <br>
                 <button onclick="clearRegression()">Clear Regression Line</button>
                 <br><br>
+                Selected data values:
+                <br>
                 Data X: <input type="text" id="dataX"></input><br>
                 Data Y: <input type="text" id="dataY"></input>
                 <br><br>
@@ -53,6 +57,7 @@
                 <button onclick="viewMode()">View Mode</button>
                 <button onclick="knnMode()">KNN Predict</button>
                 <p id="mode">View Mode</p>
+                <p id="description"></p>
             </div>
             <div class="data-container">
                 <p id="demo"></p>
