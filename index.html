@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML-Visualizer</title>
+
+    <!-- chart.js CDN library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.0.2/dist/chartjs-plugin-dragdata.min.js">
+    </script>
+    <script src="./graph.js" defer></script>
+    <script src="./logic.js" defer></script>
+    <!-- Vue.js development -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- Vue.js production -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div id="app">
+        <nav>
+            <button onclick="showModal()">Upload .csv</button>
+            <button>Download .csv</button>
+            <button onclick="clearGraph()">Clear Graph</button>
+            <button>Revert All Changes</button>
+        </nav>
+        <div class="container">
+            <div class="chart-container">
+                <canvas id="myChart" class="chart"></canvas>
+            </div>
+            <div class="tool-container">
+                input X: <input type="text" name="inputX" id="inputX">
+                <br>
+                input Y: <input type="text" name="inputY" id="inputY">
+                <br>
+                <button onclick="getInput()">Input</button>
+                <br>
+                <button onclick="linearRegression()">Linear Regression</button>
+                <br>
+                <button onclick="clearRegression()">Clear Regression Line</button>
+                <br><br>
+                Data X: <input type="text" id="dataX"></input><br>
+                Data Y: <input type="text" id="dataY"></input>
+                <br><br>
+                <button onclick="drawModeRed()">Draw Mode (Red)</button>
+                <button onclick="drawModeBlue()">Draw Mode (Blue)</button>
+                <button onclick="deleteMode()">Delete Mode</button>
+                <button onclick="viewMode()">View Mode</button>
+                <button onclick="knnMode()">KNN Predict</button>
+                <p id="mode">View Mode</p>
+            </div>
+            <div class="data-container">
+                <p id="demo"></p>
+            </div>
+        </div>
+        <div class="modal">
+            <nav>
+                <button onclick="closeModal()">Close</button>
+            </nav>        
+            <div>
+                <form id="upload">
+                    <input type="file" name="input" id="input" onchange="upload()" accept=".csv"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
