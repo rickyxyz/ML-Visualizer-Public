@@ -50,6 +50,11 @@ function viewMode(){
 function clearGraph(){
     draggableChart.data.datasets[0].data.splice(0, draggableChart.data.datasets[0].data.length);
     draggableChart.data.datasets[1].data.splice(0, draggableChart.data.datasets[1].data.length);
+    draggableChart.data.datasets[2].data.splice(0, draggableChart.data.datasets[2].data.length);
+    draggableChart.data.datasets[3].data.splice(0, draggableChart.data.datasets[3].data.length);
+    draggableChart.data.datasets[4].data.splice(0, draggableChart.data.datasets[4].data.length);
+    draggableChart.data.datasets[5].data.splice(0, draggableChart.data.datasets[5].data.length);
+    draggableChart.data.datasets[6].data.splice(0, draggableChart.data.datasets[6].data.length);
     draggableChart.update();
 }
 
