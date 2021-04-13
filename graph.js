@@ -1,5 +1,6 @@
-let myChart = document.getElementById('myChart').getContext('2d');
-var draggableChart = new Chart(myChart, {
+window.myChart = document.getElementById('myChart').getContext('2d');
+
+var draggableChart = new Chart(window.myChart, {
     data: {
         datasets: [{
             type: 'scatter',

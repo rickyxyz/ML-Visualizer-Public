@@ -9,8 +9,8 @@
 
     <!-- chart.js CDN library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.0.2/dist/chartjs-plugin-dragdata.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.0.2/dist/chartjs-plugin-dragdata.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="./graph.js" defer></script>
     <script src="./logic.js" defer></script>
     <!-- Vue.js development -->
@@ -22,57 +22,77 @@
 </head>
 
 <body>
-    <div id="app">
-        <nav>
-            <button onclick="showModal()">Upload .csv</button>
-            <button>Download .csv</button>
-            <button onclick="clearGraph()">Clear Graph</button>
-            <button>Revert All Changes</button>
-        </nav>
-        <div class="container">
-            <div class="chart-container">
-                <canvas id="myChart" class="chart"></canvas>
-            </div>
-            <div class="tool-container">
-                Manual input only inputs red data point
-                <br>
-                input X: <input type="text" name="inputX" id="inputX">
-                <br>
-                input Y: <input type="text" name="inputY" id="inputY">
-                <br>
-                <button onclick="getInput()">Input</button>
-                <br><br>
-                Linear regression only calculate the red data points<button onclick="linearRegression()">Linear Regression</button>
-                <br>
-                <button onclick="clearRegression()">Clear Regression Line</button>
-                <br><br>
-                Selected data values:
-                <br>
-                Data X: <input type="text" id="dataX"></input><br>
-                Data Y: <input type="text" id="dataY"></input>
-                <br><br>
-                <button onclick="drawModeRed()">Draw Mode (Red)</button>
-                <button onclick="drawModeBlue()">Draw Mode (Blue)</button>
-                <button onclick="deleteMode()">Delete Mode</button>
-                <button onclick="viewMode()">View Mode</button>
-                <button onclick="knnMode()">KNN Predict</button>
-                <p id="mode">View Mode</p>
-                <p id="description"></p>
-            </div>
-            <div class="data-container">
-                <p id="demo"></p>
-            </div>
+    <nav>
+        <button onclick="showUploadModal()">Upload .csv</button>
+        <button onclick="showDownloadModal()">Download .csv</button>
+        <button onclick="clearGraph()">Clear Graph</button>
+        <button>Revert All Changes</button>
+    </nav>
+
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="myChart" class="chart"></canvas>
         </div>
-        <div class="modal">
-            <nav>
-                <button onclick="closeModal()">Close</button>
-            </nav>        
-            <div>
-                <form id="upload">
-                    <input type="file" name="input" id="input" onchange="upload()" accept=".csv"/>
-                </form>
-            </div>
+        <div class="tool-container">
+            Manual input only inputs red data point
+            <br>
+            input X: <input type="text" name="inputX" id="inputX">
+            <br>
+            input Y: <input type="text" name="inputY" id="inputY">
+            <br>
+            <button onclick="getInput()">Input</button>
+            <br><br>
+            Linear regression only calculate the red data points<button onclick="linearRegression()">Linear
+                Regression</button>
+            <br>
+            <button onclick="clearRegression()">Clear Regression Line</button>
+            <br><br>
+            Selected data values:
+            <br>
+            Data X: <input type="text" id="dataX"></input><br>
+            Data Y: <input type="text" id="dataY"></input>
+            <br><br>
+            <button onclick="drawModeRed()">Draw Mode (Red)</button>
+            <button onclick="drawModeBlue()">Draw Mode (Blue)</button>
+            <button onclick="deleteMode()">Delete Mode</button>
+            <button onclick="viewMode()">View Mode</button>
+            <button onclick="knnMode()">KNN Predict</button>
+            <p id="mode">View Mode</p>
+            <p id="description"></p>
+        </div>
+        <div class="data-container">
+            <input type="text" name="dataname" id="dataname" value="sample_data.csv" readonly />
+            <div>Read Columns: <span id="readColumns">0</span></div>
+            <div>Read Rows: <span id="readRows">0</span></div>
+            <div>Read CSV: </div>
+            <table id="table">
+
+            </table>
         </div>
     </div>
+
+    <div class="modal" id="uploadmodal">
+        <nav>
+            <button onclick="closeModal()">Close</button>
+        </nav>        
+        <div>
+            <form id="upload">
+                <input type="file" name="input" id="input" onchange="upload()" accept=".csv"/>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="downloadmodal">
+        <nav>
+            <button onclick="closeModal()">Close</button>
+        </nav>        
+        <div>
+            <textarea id="result" readonly>
+
+            </textarea>
+        </div>
+    </div>
+
 </body>
+
 </html>

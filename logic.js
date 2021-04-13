@@ -4,6 +4,7 @@ var regressionLine = {m:0, b:0};
 var lastClickedElement = NaN;
 var clickMode = 'view';
 var k = 3;
+var col1, col2;
 
 function getInput(){
     let x = document.getElementById('inputX').value;
@@ -185,29 +186,133 @@ function knn(x, y){
     draggableChart.update();
 }
 
-var modal = document.getElementsByClassName("modal")[0];
+function showUploadModal(){
+    document.getElementById("uploadmodal").style.display = "block";
+}
 
-function showModal(){
-    modal.style.display = "block";
+function showDownloadModal(){
+    document.getElementById("downloadmodal").style.display = "block";
+    var output = "";
+    for(let j = 0; j < rawTable.length; j++) {
+        if(rawTable[j][0] == '') {
+            continue;
+        }
+        output += rawTable[j].join() + "\n";
+        console.log(j);
+    }
+    document.getElementById("result").value = output;
 }
 
 function closeModal() { 
-    modal.style.display = "none";
+    document.getElementById("uploadmodal").style.display = "none";
+    document.getElementById("downloadmodal").style.display = "none";
+}
+
+function getData(){
+    const xs = [];
+    const ys = [];
+    let i = 0, j = 0;
+    let invalidColumn = true;
+    do {
+        var col1 = prompt("Input column representing the X-axis!", "");
+        
+        for(i = 0; i < rawTable[0].length; i++) {
+            if(col1 === rawTable[0][i]) {
+                invalidColumn = false;
+                break;
+            }
+        }
+    } while (invalidColumn);
+
+    invalidColumn = true;
+
+    do {
+        var col2 = prompt("Input column representing the Y-axis!", "");
+        
+        invalidColumn = true;
+        for(j = 0; j < rawTable[0].length; j++) {
+            if(col2 === rawTable[0][j]) {
+                invalidColumn = false;
+                break;
+            }
+        }
+    } while (invalidColumn);
+
+    if(i != null && j != null){
+        col1 = parseInt(i);
+        col2 = parseInt(j);
+    }
+
+    for(let x = 1; x < rawTable.length; x++) {
+        // xs.push(rawTable[x][col1]);
+        // ys.push(rawTable[x][col2]);
+        addData(0, rawTable[x][col1], rawTable[x][col2]);
+        // console.log(rawTable[x][col1], rawTable[x][col2]); 
+    }
+
+    // return {xs, ys};
+}
+
+function smartsplit(str) {
+    var result = [];
+    var temp = "";
+    var inside = false;
+    for(let i = 0; i < str.length; i++) {
+        if(str[i] == '"') {
+            inside = !inside;
+        }
+        if(str[i] != ',') {
+            temp += str[i];
+        }
+        if(!inside && (str[i] == ',' || i == str.length-1)) {
+            result.push(temp);
+            temp = "";
+        }
+    }
+    return result;
 }
 
 function upload() {
-    modal.style.display = "none";
+    document.getElementById("uploadmodal").style.display = "none";
     console.log(document.getElementById("input").files[0]);
+    document.getElementById("dataname").value = document.getElementById("input").files[0].name;
+
     var FR = new FileReader();
     FR.readAsText(document.getElementById("input").files[0]);
     FR.onloadend = function() {
+        
+        clearGraph();
+
         console.log("Finished Reading", FR.readyState);
         var lines = FR.result.split("\n");
-        rawColumns = lines[0].split(",");
-        for(let i = 1; i < lines.length; i++) {
-            rawTable.push(lines[i].split(","));
+        // rawColumns = lines[0].split(",");
+        rawColumns = smartsplit(lines[0]);
+        rawTable.splice(0, rawTable.length);
+        while(document.getElementById("table").hasChildNodes()) {
+            document.getElementById("table").removeChild(document.getElementById("table").firstChild);
         }
-        // console.log(FR.result.split("\n"));
-        console.log(rawTable);
+
+        for(let i = 0; i < lines.length; i++) {
+            rawTable.push(smartsplit(lines[i]));
+        }
+
+        var docTable = document.getElementById("table");
+        for(let j = 0; j < lines.length; j++) {
+            if(rawTable[j][0] == '') {
+                continue;
+            }
+            var docRow = docTable.insertRow(docTable.length);
+            for(let i = 0; i < rawTable[1].length; i++) {
+                if(rawTable[j][i] != null) {
+                    cell = docRow.insertCell(i);
+                    cell.innerHTML = rawTable[j][i];
+                    // cell.innerHTML = "<input type=\"text\" value=\"" + rawTable[j][i] +"\" id=\""+ j + ","+i+"\"/>";
+                }
+            }
+        }
+        document.getElementById("readColumns").innerHTML = rawTable[1].length;
+        document.getElementById("readRows").innerHTML = rawTable.length - 1;
+        getData();
     };
+    document.getElementById("input").value = null;
 }
