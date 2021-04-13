@@ -108,7 +108,7 @@ var draggableChart = new Chart(window.myChart, {
                 lastClickedElement = NaN;
 
                 if(clickMode == 'drawRed'){
-                    addData(1, x, y);
+                    addData(0, x, y);
                 }
                 else if(clickMode == 'drawBlue'){
                     addData(2, x, y);
