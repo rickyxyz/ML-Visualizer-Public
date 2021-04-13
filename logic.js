@@ -18,6 +18,8 @@ function getInput(){
 }
 
 function addData(datasetIndex, x, y){
+    x = parseFloat(x);
+    y = parseFloat(y);
     draggableChart.data.datasets[datasetIndex].data.unshift({x: x, y: y});
     draggableChart.update();
 }
