@@ -3,6 +3,13 @@ window.myChart = document.getElementById('myChart').getContext('2d');
 var draggableChart = new Chart(window.myChart, {
     data: {
         datasets: [{
+            name: 'regressionLine',
+            type: 'line',
+            data: [{x: 0,y: 0}, {x: 0,y: 0}],
+            dragData: false, // prohibit dragging this dataset
+            pointRadius: 0,
+            label: 'Regression Line'
+        },{
             type: 'scatter',
             data: [{x: 1,y: 1}, {x: 2,y: 2}, {x: 3,y: 3}, {x: 4,y: 4}, {x: 5,y: 5}],
             fill: false,
@@ -12,12 +19,6 @@ var draggableChart = new Chart(window.myChart, {
             pointHitRadius: 10, // for improved touch support
             borderColor: '#FF0000',
             label: 'Data Point'
-        },{
-            type: 'line',
-            data: [{x: 0,y: 0}, {x: 0,y: 0}],
-            dragData: false, // prohibit dragging this dataset
-            pointRadius: 0,
-            label: 'Regression Line'
         },{
             hidden: false,
             type: 'scatter',
@@ -107,7 +108,7 @@ var draggableChart = new Chart(window.myChart, {
                 lastClickedElement = NaN;
 
                 if(clickMode == 'drawRed'){
-                    addData(0, x, y);
+                    addData(1, x, y);
                 }
                 else if(clickMode == 'drawBlue'){
                     addData(2, x, y);

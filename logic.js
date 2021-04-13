@@ -1,10 +1,14 @@
 var rawColumns = [];
 var rawTable = [];
-var regressionLine = {m:0, b:0};
+var regressionVariables = {m:0, b:0};
+var knnVariables = {k: 3};
 var lastClickedElement = NaN;
 var clickMode = 'view';
-var k = 3;
 var col1, col2;
+
+// shorthand variable
+const DATASET = draggableChart.data.datasets;
+const REGRESSIONLINE = DATASET[0];
 
 function getInput(){
     let x = document.getElementById('inputX').value;
@@ -13,10 +17,8 @@ function getInput(){
     addData(0, x, y);
 }
 
-function addData(i, x, y){
-    x = parseInt(x);
-    y = parseInt(y);
-    draggableChart.data.datasets[i].data.unshift({x: x, y: y});
+function addData(datasetIndex, x, y){
+    draggableChart.data.datasets[datasetIndex].data.unshift({x: x, y: y});
     draggableChart.update();
 }
 
@@ -51,18 +53,15 @@ function viewMode(){
 }
 
 function clearGraph(){
-    draggableChart.data.datasets[0].data.splice(0, draggableChart.data.datasets[0].data.length);
-    draggableChart.data.datasets[1].data.splice(0, draggableChart.data.datasets[1].data.length);
-    draggableChart.data.datasets[2].data.splice(0, draggableChart.data.datasets[2].data.length);
-    draggableChart.data.datasets[3].data.splice(0, draggableChart.data.datasets[3].data.length);
-    draggableChart.data.datasets[4].data.splice(0, draggableChart.data.datasets[4].data.length);
-    draggableChart.data.datasets[5].data.splice(0, draggableChart.data.datasets[5].data.length);
-    draggableChart.data.datasets[6].data.splice(0, draggableChart.data.datasets[6].data.length);
+    let length = DATASET.length;
+    for(let i = 0; i < length; i++){
+        DATASET[i].data.splice(0, DATASET[i].data.length);
+    }
     draggableChart.update();
 }
 
 function clearRegression(){
-    draggableChart.data.datasets[1].data.splice(0, draggableChart.data.datasets[1].data.length);
+    REGRESSIONLINE.data.splice(0, REGRESSIONLINE.data.length);
     draggableChart.update();
 }
 
@@ -74,11 +73,11 @@ function linearRegression(){
     let x2 = 1;
     let y2 = m * x2 + b;
 
-    let dataLength = draggableChart.data.datasets[0].data.length;
+    let dataLength = draggableChart.data.datasets[1].data.length;
     let xSum = 0;
     let ySum = 0;
     for(let i = 0; i < dataLength; i++){
-        let data = draggableChart.data.datasets[0].data[i];
+        let data = draggableChart.data.datasets[1].data[i];
         xSum += data.x;
         ySum += data.y;
     }
@@ -88,7 +87,7 @@ function linearRegression(){
     let numerator = 0;
     let denominator = 0;
     for(let i = 0; i < dataLength; i++){
-        let data = draggableChart.data.datasets[0].data[i];
+        let data = DATASET[1].data[i];
         numerator += (data.x - xMean) * (data.y - yMean);
         denominator += (data.x - xMean) * (data.x - xMean);
     }
@@ -101,13 +100,13 @@ function linearRegression(){
     x2 = 25;
     y2 = m * x2 + b;
 
-    draggableChart.data.datasets[1].data[0] = {x: x1, y: y1};
-    draggableChart.data.datasets[1].data[1] = {x: x2, y: y2};
-    draggableChart.data.datasets[1].pointRadius = 0;
+    REGRESSIONLINE.data[0] = {x: x1, y: y1};
+    REGRESSIONLINE.data[1] = {x: x2, y: y2};
+    REGRESSIONLINE.pointRadius = 0;
     draggableChart.update();
 
-    regressionLine.m = m;
-    regressionLine.b = b;
+    regressionVariables.m = m;
+    regressionVariables.b = b;
 }
 
 function knnSort(a, b){
@@ -135,7 +134,7 @@ function knnLine(x, y, arr){
 }
 
 function knn(x, y){
-    let data1 = draggableChart.data.datasets[0];
+    let data1 = draggableChart.data.datasets[1];
     let data2 = draggableChart.data.datasets[2];
     let dataLength1 = data1.data.length;
     let dataLength2 = data2.data.length;
@@ -158,7 +157,7 @@ function knn(x, y){
 
     let neighbors = [0, 0];
     let maxDist = 0;
-    for(let i = 0; i < k; i++){
+    for(let i = 0; i < knnVariables.k; i++){
         neighbors[distData[i].category] += 1;
         if(distData[i].dist > maxDist) maxDist = distData[i].dist;
     }
@@ -215,6 +214,7 @@ function getData(){
     const ys = [];
     let i = 0, j = 0;
     let invalidColumn = true;
+    let last = "";
     do {
         var col1 = prompt("Input column representing the X-axis!", "");
         
@@ -248,7 +248,7 @@ function getData(){
     for(let x = 1; x < rawTable.length; x++) {
         // xs.push(rawTable[x][col1]);
         // ys.push(rawTable[x][col2]);
-        addData(0, rawTable[x][col1], rawTable[x][col2]);
+        addData(1, rawTable[x][col1], rawTable[x][col2]);
         // console.log(rawTable[x][col1], rawTable[x][col2]); 
     }
 
@@ -282,7 +282,7 @@ function upload() {
     var FR = new FileReader();
     FR.readAsText(document.getElementById("input").files[0]);
     FR.onloadend = function() {
-
+        
         clearGraph();
 
         console.log("Finished Reading", FR.readyState);
@@ -306,6 +306,8 @@ function upload() {
             var docRow = docTable.insertRow(docTable.length);
             for(let i = 0; i < rawTable[1].length; i++) {
                 if(rawTable[j][i] != null) {
+                    if(i == rawTable[1].length - 1)
+                        rawTable[j][i] = rawTable[j][i].slice(0, -1);
                     cell = docRow.insertCell(i);
                     cell.innerHTML = rawTable[j][i];
                     // cell.innerHTML = "<input type=\"text\" value=\"" + rawTable[j][i] +"\" id=\""+ j + ","+i+"\"/>";
