@@ -14,6 +14,8 @@ function getInput(){
 }
 
 function addData(i, x, y){
+    x = parseInt(x);
+    y = parseInt(y);
     draggableChart.data.datasets[i].data.unshift({x: x, y: y});
     draggableChart.update();
 }
@@ -280,7 +282,7 @@ function upload() {
     var FR = new FileReader();
     FR.readAsText(document.getElementById("input").files[0]);
     FR.onloadend = function() {
-        
+
         clearGraph();
 
         console.log("Finished Reading", FR.readyState);
