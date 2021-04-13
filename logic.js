@@ -14,10 +14,7 @@ function getInput(){
 }
 
 function addData(i, x, y){
-    x = parseInt(x);
-    y = parseInt(y);
-
-    draggableChart.data.datasets[i].data.unshift({x: x, y: y});
+    draggableChart.data.datasets[i].data.unshift({x: parseInt(x), y: parseInt(y)});
     draggableChart.update();
 }
 
@@ -78,7 +75,8 @@ function linearRegression(){
     let dataLength = draggableChart.data.datasets[0].data.length;
     let xSum = 0;
     let ySum = 0;
-    for(let i = 0; i < dataLength; i++){
+
+    for(let i = 1; i < dataLength; i++){
         let data = draggableChart.data.datasets[0].data[i];
         xSum += data.x;
         ySum += data.y;
@@ -88,7 +86,7 @@ function linearRegression(){
 
     let numerator = 0;
     let denominator = 0;
-    for(let i = 0; i < dataLength; i++){
+    for(let i = 1; i < dataLength; i++){
         let data = draggableChart.data.datasets[0].data[i];
         numerator += (data.x - xMean) * (data.y - yMean);
         denominator += (data.x - xMean) * (data.x - xMean);
