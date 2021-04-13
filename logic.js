@@ -1,14 +1,10 @@
 var rawColumns = [];
 var rawTable = [];
-var regressionVariables = {m:0, b:0};
-var knnVariables = {k: 3};
+var regressionLine = {m:0, b:0};
 var lastClickedElement = NaN;
 var clickMode = 'view';
+var k = 3;
 var col1, col2;
-
-// shorthand variable
-const DATASET = draggableChart.data.datasets;
-const REGRESSIONLINE = DATASET[0];
 
 function getInput(){
     let x = document.getElementById('inputX').value;
@@ -17,11 +13,11 @@ function getInput(){
     addData(0, x, y);
 }
 
-function addData(datasetIndex, x, y){
+function addData(i, x, y){
     x = parseInt(x);
     y = parseInt(y);
-    
-    draggableChart.data.datasets[datasetIndex].data.unshift({x: x, y: y});
+
+    draggableChart.data.datasets[i].data.unshift({x: x, y: y});
     draggableChart.update();
 }
 
@@ -56,15 +52,18 @@ function viewMode(){
 }
 
 function clearGraph(){
-    let length = DATASET.length;
-    for(let i = 0; i < length; i++){
-        DATASET[i].data.splice(0, DATASET[i].data.length);
-    }
+    draggableChart.data.datasets[0].data.splice(0, draggableChart.data.datasets[0].data.length);
+    draggableChart.data.datasets[1].data.splice(0, draggableChart.data.datasets[1].data.length);
+    draggableChart.data.datasets[2].data.splice(0, draggableChart.data.datasets[2].data.length);
+    draggableChart.data.datasets[3].data.splice(0, draggableChart.data.datasets[3].data.length);
+    draggableChart.data.datasets[4].data.splice(0, draggableChart.data.datasets[4].data.length);
+    draggableChart.data.datasets[5].data.splice(0, draggableChart.data.datasets[5].data.length);
+    draggableChart.data.datasets[6].data.splice(0, draggableChart.data.datasets[6].data.length);
     draggableChart.update();
 }
 
 function clearRegression(){
-    REGRESSIONLINE.data.splice(0, REGRESSIONLINE.data.length);
+    draggableChart.data.datasets[1].data.splice(0, draggableChart.data.datasets[1].data.length);
     draggableChart.update();
 }
 
@@ -76,11 +75,11 @@ function linearRegression(){
     let x2 = 1;
     let y2 = m * x2 + b;
 
-    let dataLength = draggableChart.data.datasets[1].data.length;
+    let dataLength = draggableChart.data.datasets[0].data.length;
     let xSum = 0;
     let ySum = 0;
     for(let i = 0; i < dataLength; i++){
-        let data = draggableChart.data.datasets[1].data[i];
+        let data = draggableChart.data.datasets[0].data[i];
         xSum += data.x;
         ySum += data.y;
     }
@@ -90,7 +89,7 @@ function linearRegression(){
     let numerator = 0;
     let denominator = 0;
     for(let i = 0; i < dataLength; i++){
-        let data = DATASET[1].data[i];
+        let data = draggableChart.data.datasets[0].data[i];
         numerator += (data.x - xMean) * (data.y - yMean);
         denominator += (data.x - xMean) * (data.x - xMean);
     }
@@ -103,13 +102,13 @@ function linearRegression(){
     x2 = 25;
     y2 = m * x2 + b;
 
-    REGRESSIONLINE.data[0] = {x: x1, y: y1};
-    REGRESSIONLINE.data[1] = {x: x2, y: y2};
-    REGRESSIONLINE.pointRadius = 0;
+    draggableChart.data.datasets[1].data[0] = {x: x1, y: y1};
+    draggableChart.data.datasets[1].data[1] = {x: x2, y: y2};
+    draggableChart.data.datasets[1].pointRadius = 0;
     draggableChart.update();
 
-    regressionVariables.m = m;
-    regressionVariables.b = b;
+    regressionLine.m = m;
+    regressionLine.b = b;
 }
 
 function knnSort(a, b){
@@ -137,7 +136,7 @@ function knnLine(x, y, arr){
 }
 
 function knn(x, y){
-    let data1 = draggableChart.data.datasets[1];
+    let data1 = draggableChart.data.datasets[0];
     let data2 = draggableChart.data.datasets[2];
     let dataLength1 = data1.data.length;
     let dataLength2 = data2.data.length;
@@ -160,7 +159,7 @@ function knn(x, y){
 
     let neighbors = [0, 0];
     let maxDist = 0;
-    for(let i = 0; i < knnVariables.k; i++){
+    for(let i = 0; i < k; i++){
         neighbors[distData[i].category] += 1;
         if(distData[i].dist > maxDist) maxDist = distData[i].dist;
     }
@@ -251,7 +250,7 @@ function getData(){
     for(let x = 1; x < rawTable.length; x++) {
         // xs.push(rawTable[x][col1]);
         // ys.push(rawTable[x][col2]);
-        addData(1, rawTable[x][col1], rawTable[x][col2]);
+        addData(0, rawTable[x][col1], rawTable[x][col2]);
         // console.log(rawTable[x][col1], rawTable[x][col2]); 
     }
 
