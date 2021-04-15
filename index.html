@@ -11,7 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.0.2/dist/chartjs-plugin-dragdata.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="./app.js" defer></script>
     <script src="./graph.js" defer></script>
     <script src="./logic.js" defer></script>
     <!-- Vue.js development -->
@@ -20,59 +19,92 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
     <link rel="stylesheet" href="./reset.css">
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 </head>
 
 <body>
     <nav>
-        <button onclick="showUploadModal()">Upload .csv</button>
-        <button onclick="showDownloadModal()">Download .csv</button>
-        <button onclick="clearGraph()">Clear Graph</button>
-        <button>Revert All Changes</button>
+        <button id="filebtn" class="active-menu" onclick="highlight(1)">File</button>
+        <button id="graphbtn" onclick="highlight(2)">Graph</button>
+        <button id="algobtn" onclick="highlight(3)">Algorithm</button>
     </nav>
-
-    <div class="container">
-        <div class="chart-container">
-            <canvas id="myChart" class="chart"></canvas>
+    <div class="toolrow">
+        <div>
+            <button class="tool" id="toggledown" onclick="toggleMenu()">&nbsp;</button>
         </div>
-        <div class="tool-container" id="vue-tool">
-            Manual input only inputs red data point
-            <br>
-            input X: <input type="text" name="inputX" id="inputX">
-            <br>
-            input Y: <input type="text" name="inputY" id="inputY">
-            <br>
-            <button onclick="getInput()">Input</button>
-            <br><br>
-            Linear regression only calculate the red data points<button onclick="linearRegression()">Linear
-                Regression</button>
-            <br>
-            <button onclick="clearRegression()">Clear Regression Line</button>
-            <br><br>
+        <div id="filediv">
+            <button class="tool" id="upload" onclick="showUploadModal()">Upload</button>
+            <button class="tool" id="download" onclick="showDownloadModal()">Download</button>
+        </div>
+        <div id="graphdiv" class="gone">
+            <button class="tool" id="drawRed" onclick="drawModeRed()">Draw Red</button>
+            <button class="tool" id="drawBlue" onclick="drawModeBlue()">Draw Blue</button>
+            <button class="tool" id="delete" onclick="deleteMode()">Delete</button>
+            <button class="tool" id="clear" onclick="clearGraph()">Clear Graph</button>
+        </div>
+        <div id="algodiv" class="gone">
+            <button class="tool" id="linreg" onclick="toggleLinreg()">Linear Regression</button>
+            <button class="tool" id="knn" onclick="toggleKNN ()">K-Nearest Neighbours</button>
+        </div>
+    </div>
+    <div class="tool-explanation">
+        <h2 id="mode">Select a Tool.</h2><div id="description">This text will change and describe what the selected tool does.</div>
+    </div>
+    <div class="container">
+        <div style="display: none">
             Selected data values:
             <br>
             Data X: <input type="text" id="dataX"></input><br>
             Data Y: <input type="text" id="dataY"></input>
-            <br><br>
-            <button v-on:click="changeMode('drawRed')">Draw Mode (Red)</button>
-            <button v-on:click="changeMode('drawBlue')">Draw Mode (Blue)</button>
-            <button v-on:click="changeMode('delete')">Delete Mode</button>
-            <button v-on:click="changeMode('view')">View Mode</button>
-            <button v-on:click="changeMode('KNN')">KNN Predict</button>
-            <p>{{ modeTitle }}</p>
-            <p>{{ modeDescription }}</p>
+        </div>
+        <div class="chart-container">
+            <canvas id="myChart" class="chart"></canvas>
+        </div>
+        <div class="algo-container">
+            <div class="algo-explanation">
+                <h2 id="algo">Select an algorithm</h2>
+            </div>
+            <div class="gone" id="linreg-explanation">
+                <div class="callout">
+                    <span id="info"></span><div>This linear regression only takes the RED data points into account.</div>
+                </div>
+                Linear regression is an algorithm used to solve regression, curve-fitting problems.
+                <br><br>
+                We will fit a line through the datapoints. This line is the equation
+                that predicts continuous values, given an input. For instance, given a year, we predict a house's price.
+                <br><br>
+                Few common methods to find this line include the partial derivative equal zero and gradient descent.
+            </div>
+            <div class="gone" id="knn-explanation">
+                K-Nearest Neighbours is an algorithm used to solve classification problems.
+                <br><br>
+                The general step is as follows:
+                <ol>
+                    <li>Select a K value.</li>
+                    <li>Calculate the distance between the to-be-predicted data point and all known data points.</li>
+                    <li>Select the K-nearest data points to the to-be-predicted data point.</li>
+                    <li>Classify the to-be-predicted data point by looking at the majority of the K-nearest neighbours.</li>
+                </ol>
+            </div>
         </div>
         <div class="data-container">
             <input type="text" name="dataname" id="dataname" value="sample_data.csv" readonly />
-            <div>Read Columns: <span id="readColumns">0</span></div>
-            <div>Read Rows: <span id="readRows">0</span></div>
+            <div>This .csv file contains <span id="readColumns">0</span> columns and <span id="readRows">0</span> rows.</div>
+            <div class="callout">
+                <span id="info"></span>
+                <div>Set up the graph by selecting two columns:
+                    <ul>
+                        <li><input id="x-col" onchange="checkValidColumn()" placeholder="Column for X-axis"/></li>
+                        <li><input id="y-col" onchange="checkValidColumn()" placeholder="Column for Y-axis"/></li>
+                    </ul>
+                    <span id="error"></span>
+                </div>
+            </div>
             <div>Read CSV: </div>
             <table id="table">
+
             </table>
         </div>
-    </div>
-
-    <div class="container">
-        explanation
     </div>
 
     <div class="modal" id="uploadmodal">
@@ -91,8 +123,7 @@
             <button onclick="closeModal()">Close</button>
         </nav>        
         <div>
-            <textarea id="result" readonly>
-
+            <textarea id="result" placeholder="After a .csv has been uploaded and modified, the resulting .csv that is able to be copy and pasted will appear here." readonly>
             </textarea>
         </div>
     </div>

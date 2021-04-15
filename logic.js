@@ -1,10 +1,216 @@
+var menuStyle = 0;
+var activemenu = 0;
+var menu = [document.getElementById('filebtn'), document.getElementById('graphbtn'), document.getElementById('algobtn')];
+var toolrow = [document.getElementById('filediv'), document.getElementById('graphdiv'), document.getElementById('algodiv')];
+var graphtool = [document.getElementById('drawRed'), document.getElementById('drawBlue'), document.getElementById('knn'),  document.getElementById('delete')]
+var algo = [document.getElementById('linreg'), document.getElementById('knn')]
+var linreg = 0;
+var knn = 0;
+
 var rawColumns = [];
 var rawTable = [];
 var regressionLine = {m:0, b:0};
 var lastClickedElement = NaN;
-var clickMode = 'view';
+var toolMode = 'view';
+var algoMode = 0;
+var xvalid = -1, yvalid = -1;
+
 var k = 3;
 var col1, col2;
+
+function checkValidColumn() {
+    x = document.getElementById('x-col').value;
+    y = document.getElementById('y-col').value;
+    if(rawTable[0] == null) {
+        console.log('1');
+        document.getElementById('error').innerHTML = "You haven't imported any external .csv!";
+        return;
+    }
+    if(x && y) {
+        console.log(x + y);
+        xvalid = -1;
+        yvalid = -1;
+
+        for(let i = 0; i < rawTable[0].length && !(xvalid > -1 && yvalid > -1); i++) {
+            console.log(">" + i);
+            if(x == rawTable[0][i] && xvalid === -1) xvalid = i;
+            if(y == rawTable[0][i] && yvalid === -1) yvalid = i;
+        }
+        if(xvalid > -1 && yvalid > -1) {
+            console.log('2');
+            document.getElementById('error').innerHTML = "";
+            clearGraph();
+            getData();
+        } else if (xvalid === -1){
+            console.log('3');
+            document.getElementById('error').innerHTML = "Columns for X-axis doesn't exist within the .csv!";
+        } else {
+            console.log('4');
+            document.getElementById('error').innerHTML = "Columns for Y-axis doesn't exist within the .csv!";
+        }
+    } else {
+        console.log('5');
+        document.getElementById('error').innerHTML.innerHTML = "Both columns don't exist within the .csv!";
+    }
+}
+
+function updateAlgoDesc() {
+    switch(algoMode) {
+        case 1:
+            document.getElementById('algo').textContent = "Linear Regression";
+            document.getElementById('linreg-explanation').className = "";
+            document.getElementById('knn-explanation').className = "gone";
+            break;
+        case 2:
+            document.getElementById('algo').textContent = "K-Nearest Neighbours";
+            document.getElementById('linreg-explanation').className = "gone";
+            document.getElementById('knn-explanation').className = "";
+            break; 
+        default:
+            document.getElementById('algo').textContent = "Select an algorithm";
+            document.getElementById('linreg-explanation').className = "gone";
+            document.getElementById('knn-explanation').className = "gone";
+            break;
+    }
+}
+
+function updateModeDesc() {
+    switch(toolMode) {
+        case "drawRed":
+            document.getElementById('mode').textContent = "Draw Red.";
+            document.getElementById('description').innerHTML= "Draw a RED data point on the graph. Click anywhere on the graph!";
+            break;
+        case "drawBlue":
+            document.getElementById('mode').textContent = "Draw Blue.";
+            document.getElementById('description').innerHTML= "Draw a BLUE data point on the graph. Click anywhere on the graph!";
+            break;
+        case "delete":
+            document.getElementById('mode').textContent = "Delete.";
+            document.getElementById('description').innerHTML= "Deletes a data point. Click on any existing data point to delete it.";
+            break;
+        case "KNN":
+            document.getElementById('mode').textContent = "KNN Prediction.";
+            document.getElementById('description').innerHTML= "Predict what class would be given to a data point. Click anywhere on the graph!";
+            break;
+        default:
+            document.getElementById('mode').textContent = "Select a tool.";
+            document.getElementById('description').innerHTML= "This box will briefly show what the selected tool does.";
+            break;
+    }
+}
+
+function setInactiveAlgo() {
+    for(let i = 0; i < 2; i++) {
+        // if(algo[i].className !== "tool") {
+        //     draggableChart.data.datasets[4].data = [];
+        //     draggableChart.data.datasets[5].data = [];
+        //     draggableChart.data.datasets[6].data = [];
+        // }
+        algo[i].className = "tool";
+    }
+}
+
+function setInactiveTool() {
+    for(let i = 0; i < 4; i++) {
+        graphtool[i].className = "tool";
+    }
+}
+
+function toggleKNN() {
+    if(!knn) {
+        knnMode();
+        clearRegression();
+        setInactiveTool();
+        setInactiveAlgo();
+        document.getElementById('knn').className = "tool active-tool";
+        linreg = 0;
+        algoMode = 2;
+        toolMode = 'KNN';
+    } else {
+        document.getElementById('knn').className = "tool";
+        algoMode = 0;
+        toolMode = 'view';
+        draggableChart.data.datasets[4].data = [];
+        draggableChart.data.datasets[5].data = [];
+        draggableChart.data.datasets[6].data = [];
+    }
+    knn = !knn;
+    updateModeDesc();
+    updateAlgoDesc();
+}
+
+
+function toggleLinreg() {
+    if(knn) {
+        toolMode = "view";
+    }
+    if(!linreg) {
+        linearRegression();
+        setInactiveAlgo();
+        document.getElementById('linreg').className = "tool active-tool";
+        knn = 0;
+        algoMode = 1;
+    } else {
+        clearRegression();
+        document.getElementById('linreg').className = "tool";
+        algoMode = 0;
+    }
+    linreg = !linreg;
+    updateModeDesc();
+    updateAlgoDesc();
+}
+
+function toggleMenu() {
+    if(menuStyle == 1) {
+        menuStyle = 0;
+        for(let i = 0; i < 5; i++) {
+            if(graphtool[i] != null)
+                graphtool[i].className += "tool";
+            if(menu[i] != null)
+                menu[i].className = "";
+            if(toolrow[i] != null)
+                toolrow[i].className = "gone";
+        }
+        menu[activemenu].className = "active-menu";
+        toolrow[activemenu].className = "";
+        if(toolMode === 'drawRed') {
+            graphtool[0].className = "tool active-tool";
+        }
+        if(toolMode === 'drawBlue') {
+            graphtool[1].className = "tool active-tool";
+        }
+        if(toolMode === 'KNN') {
+            graphtool[2].className = "tool active-tool";
+        }
+        if(toolMode === 'erase') {
+            graphtool[3].className = "tool active-tool";
+        }
+        document.getElementById('toggleup').id = 'toggledown';
+    } else {
+        for(let i = 0; i < 5; i++) {
+            if(menu[i] != null)
+                menu[i].className = "gone";
+            if(toolrow[i] != null)
+            // if(!toolrow[i].className.includes("active-tool"))
+                toolrow[i].className = "";
+        }
+        menuStyle = 1;
+        document.getElementById('toggledown').id = 'toggleup';
+    }
+}
+
+function highlight(n) {
+    activemenu = n - 1;
+    for(let i = 0; i < 4; i++) {
+        if(i == activemenu) {
+            menu[i].className = "active-menu";
+            toolrow[i].className = "";
+        } else {
+            menu[i].className = "";
+            toolrow[i].className = "gone";
+        }
+    }
+}
 
 function getInput(){
     let x = document.getElementById('inputX').value;
@@ -19,33 +225,48 @@ function addData(i, x, y){
 }
 
 function drawModeRed(){
-    document.getElementById('mode').textContent = "Draw Mode Red";
-    document.getElementById('description').textContent = "Click on the graph to add red data point";
-    clickMode = 'drawRed';
+    if(toolMode === 'drawRed') {
+        toolMode = 'view';
+        setInactiveTool();
+    } else {
+        toolMode = 'drawRed';
+        setInactiveTool();
+        document.getElementById('drawRed').className = "tool active-tool";
+    }
+    updateModeDesc();
 }
 
 function drawModeBlue(){
-    document.getElementById('mode').textContent = "Draw Mode Blue";
-    document.getElementById('description').textContent = "Click on the graph to add blue data point";
-    clickMode = 'drawBlue';
+    if(toolMode === 'drawBlue') {
+        toolMode = 'view';
+        setInactiveTool();
+    } else {
+        toolMode = 'drawBlue';
+        setInactiveTool();
+        document.getElementById('drawBlue').className = "tool active-tool";
+    }
+    updateModeDesc();
 }
 
 function knnMode(){
-    document.getElementById('mode').textContent = "KNN Mode";
-    document.getElementById('description').textContent = "Click on the graph to do a KNN classification";
-    clickMode = 'KNN';
+    toolMode = 'KNN';
 }
 
 function deleteMode(){
-    document.getElementById('mode').textContent = "Delete Mode";
-    document.getElementById('description').textContent = "Click on existing data point or the KNN point to delete it";
-    clickMode = 'delete';
+    if(toolMode === 'delete') {
+        toolMode = 'view';
+        setInactiveTool();
+    } else {
+        toolMode = 'delete';
+        setInactiveTool();
+        document.getElementById('delete').className = "tool active-tool";
+    }
+    updateModeDesc();
 }
 
 function viewMode(){
-    document.getElementById('mode').textContent = "View Mode";
-    document.getElementById('description').textContent = "Click on existing data point to move it";
-    clickMode = 'view';
+    toolMode = 'view';
+    updateModeDesc();
 }
 
 function clearGraph(){
@@ -133,7 +354,8 @@ function knnLine(x, y, arr){
     line3.data[1] = {x: arr[2].x, y: arr[2].y};
 }
 
-function knn(x, y){
+function knn_predict(x, y){
+    console.log('asd');
     let data1 = draggableChart.data.datasets[0];
     let data2 = draggableChart.data.datasets[2];
     let dataLength1 = data1.data.length;
@@ -212,33 +434,33 @@ function closeModal() {
 function getData(){
     const xs = [];
     const ys = [];
-    let i = 0, j = 0;
+    let i = xvalid, j = yvalid;
     let invalidColumn = true;
     let last = "";
-    do {
-        var col1 = prompt("Input column representing the X-axis!", "");
+    // do {
+    //     var col1 = prompt("Input column representing the X-axis!", "");
         
-        for(i = 0; i < rawTable[0].length; i++) {
-            if(col1 === rawTable[0][i]) {
-                invalidColumn = false;
-                break;
-            }
-        }
-    } while (invalidColumn);
+    //     for(i = 0; i < rawTable[0].length; i++) {
+    //         if(col1 === rawTable[0][i]) {
+    //             invalidColumn = false;
+    //             break;
+    //         }
+    //     }
+    // } while (invalidColumn);
 
-    invalidColumn = true;
+    // invalidColumn = true;
 
-    do {
-        var col2 = prompt("Input column representing the Y-axis!", "");
+    // do {
+    //     var col2 = prompt("Input column representing the Y-axis!", "");
         
-        invalidColumn = true;
-        for(j = 0; j < rawTable[0].length; j++) {
-            if(col2 === rawTable[0][j]) {
-                invalidColumn = false;
-                break;
-            }
-        }
-    } while (invalidColumn);
+    //     invalidColumn = true;
+    //     for(j = 0; j < rawTable[0].length; j++) {
+    //         if(col2 === rawTable[0][j]) {
+    //             invalidColumn = false;
+    //             break;
+    //         }
+    //     }
+    // } while (invalidColumn);
 
     if(i != null && j != null){
         col1 = parseInt(i);
@@ -316,7 +538,7 @@ function upload() {
         }
         document.getElementById("readColumns").innerHTML = rawTable[1].length;
         document.getElementById("readRows").innerHTML = rawTable.length - 1;
-        getData();
+        // getData();
     };
     document.getElementById("input").value = null;
 }

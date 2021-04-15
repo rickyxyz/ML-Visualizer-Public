@@ -13,7 +13,6 @@ var draggableChart = new Chart(window.myChart, {
             borderColor: '#FF0000',
             label: 'Data Point'
         },{
-            name: 'regressionLine',
             type: 'line',
             data: [{x: 0,y: 0}, {x: 0,y: 0}],
             dragData: false, // prohibit dragging this dataset
@@ -85,7 +84,7 @@ var draggableChart = new Chart(window.myChart, {
                 let datasetIndex = lastClickedElement.datasetIndex;
                 let index = lastClickedElement.index;
 
-                if(clickMode === 'delete'){
+                if(toolMode === 'delete'){
                     if (index > -1) {
                         draggableChart.data.datasets[datasetIndex].data.splice(index, 1);
                         if(datasetIndex === 3){
@@ -107,14 +106,14 @@ var draggableChart = new Chart(window.myChart, {
                 dataY.value = 'NaN';
                 lastClickedElement = NaN;
 
-                if(clickMode == 'drawRed'){
+                if(toolMode == 'drawRed'){
                     addData(0, x, y);
                 }
-                else if(clickMode == 'drawBlue'){
+                else if(toolMode == 'drawBlue'){
                     addData(2, x, y);
                 }
-                else if(clickMode == 'KNN'){
-                    knn(x, y);
+                else if(toolMode == 'KNN'){
+                    knn_predict(x, y);
                 }
             }
         },
