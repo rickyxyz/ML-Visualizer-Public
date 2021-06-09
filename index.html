@@ -11,71 +11,86 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.0.2/dist/chartjs-plugin-dragdata.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="./graph.js" defer></script>
-    <script src="./logic.js" defer></script>
+    <script src="./js/graph.js" defer></script>
+    <script src="./js/logic.js" defer></script>
+    <script src="./js/app.js" defer></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js"></script>
     <!-- Vue.js development -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> -->
     <!-- Vue.js production -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
-    <link rel="stylesheet" href="./reset.css">
-    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 </head>
 
 <body>
-    <nav>
-        <button id="filebtn" class="active-menu" onclick="highlight(1)">File</button>
-        <button id="graphbtn" onclick="highlight(2)">Graph</button>
-        <button id="algobtn" onclick="highlight(3)">Algorithm</button>
-    </nav>
-    <div class="toolrow">
-        <div>
-            <button class="tool" id="toggledown" onclick="toggleMenu()">&nbsp;</button>
+    <span id="vue-header">
+        <nav>
+            <button id="filebtn" @click="selectedMenu = 1; selectedTool1 = 0; selectedTool2 = 0" :class="{activeMenu:selectedMenu == 1, gone:menuIsHidden}">Data</button>
+            <button id="graphbtn" @click="selectedMenu = 2; selectedTool1 = 0; selectedTool2 = 0" :class="{activeMenu:selectedMenu == 2, gone:menuIsHidden}">Graph</button>
+            <button id="algobtn" @click="selectedMenu = 3; selectedTool1 = 0; selectedTool2 = 0" :class="{activeMenu:selectedMenu == 3, gone:menuIsHidden}">Algorithm</button>
+        </nav>
+        <div class="toolrow">
+            <div>
+                <button class="tool" :id="menuIcon" @click="toggleMenu()">&nbsp;</button>
+            </div>
+            <div id="filediv" :class="{gone:selectedMenu != 1 && !menuIsHidden}">
+                <button id="upload" onclick="showUploadModal()">Upload</button>
+                <button id="download" onclick="showDownloadModal()">Download</button>
+                <button id="loadDefault" onclick="loadDefault()">Load Default dataset</button>
+            </div>
+            <div id="graphdiv" :class="{gone:selectedMenu != 2 && !menuIsHidden}">
+                <button id="drawRed" @click="changeMode('drawRed'); selectedTool1 = selectedTool1===1?0:1" :class="{activeTool:selectedTool1 == 1}">Draw Red</button>
+                <button id="drawBlue" @click="changeMode('drawBlue'); selectedTool1 = selectedTool1===2?0:2" :class="{activeTool:selectedTool1 == 2}">Draw Blue</button>
+                <button id="delete" @click="changeMode('delete'); selectedTool1 = selectedTool1===3?0:3" :class="{activeTool:selectedTool1 == 3}">Delete</button>
+                <button id="clear" onclick="clearGraph()">Clear Graph</button>
+            </div>
+            <div id="algodiv" :class="{gone:selectedMenu != 3 && !menuIsHidden, buttonMargin: menuIsHidden == true}">
+                <button id="linreg" @click="changeMode('linearRegression'); selectAlgorithm('linear regression'); selectedTool2 = selectedTool2===1?0:1; toggleLinearRegression()" :class="{activeTool:selectedTool2 === 1}">Linear Regression</button>
+                <button id="knn" @click="changeMode('KNN'); selectAlgorithm('KNN'); selectedTool2 = selectedTool2===2?0:2; toggleKNN()" :class="{activeTool:selectedTool2 === 2}">K-Nearest Neighbours</button>
+            </div>
         </div>
-        <div id="filediv">
-            <button class="tool" id="upload" onclick="showUploadModal()">Upload</button>
-            <button class="tool" id="download" onclick="showDownloadModal()">Download</button>
+        <div class="tool-explanation">
+            <h2 id="mode">{{ mode }}</h2>
+            <div id="description">{{ description }}</div>
         </div>
-        <div id="graphdiv" class="gone">
-            <button class="tool" id="drawRed" onclick="drawModeRed()">Draw Red</button>
-            <button class="tool" id="drawBlue" onclick="drawModeBlue()">Draw Blue</button>
-            <button class="tool" id="delete" onclick="deleteMode()">Delete</button>
-            <button class="tool" id="clear" onclick="clearGraph()">Clear Graph</button>
-        </div>
-        <div id="algodiv" class="gone">
-            <button class="tool" id="linreg" onclick="toggleLinreg()">Linear Regression</button>
-            <button class="tool" id="knn" onclick="toggleKNN ()">K-Nearest Neighbours</button>
-        </div>
-    </div>
-    <div class="tool-explanation">
-        <h2 id="mode">Select a Tool.</h2><div id="description">This text will change and describe what the selected tool does.</div>
-    </div>
+    </span>
     <div class="container">
-        <div style="display: none">
-            Selected data values:
-            <br>
-            Data X: <input type="text" id="dataX"></input><br>
-            Data Y: <input type="text" id="dataY"></input>
-        </div>
         <div class="chart-container">
             <canvas id="myChart" class="chart"></canvas>
         </div>
-        <div class="algo-container">
+
+        <div class="algo-container" id="vue-algorithmExplanation">
             <div class="algo-explanation">
-                <h2 id="algo">Select an algorithm</h2>
+                <h2 id="algo">{{ algorithmName }}</h2>
             </div>
-            <div class="gone" id="linreg-explanation">
+
+            <div :class="{gone:selectedAlgorithm != 'linear regression'}">
                 <div class="callout">
                     <span id="info"></span><div>This linear regression only takes the RED data points into account.</div>
                 </div>
-                Linear regression is an algorithm used to solve regression, curve-fitting problems.
+                Linear Regression is an algorithm used to solve regression, curve-fitting problems.
                 <br><br>
                 We will fit a line through the datapoints. This line is the equation
                 that predicts continuous values, given an input. For instance, given a year, we predict a house's price.
                 <br><br>
                 Few common methods to find this line include the partial derivative equal zero and gradient descent.
+                <div class="linearRegressionInput">
+                    <br>
+                    Learning Rate: <input v-model.number="regressionLRate" type="number" @change="updateRegressionParameter()">
+                    <br>
+                    Epochs: <input v-model.number="regressionEpochs" type="number" @change="updateRegressionParameter()">
+                    <br>
+                    Slope: {{ regressionM }}
+                    <br>
+                    Intercecpt: {{ regressionB }}
+                </div>
             </div>
-            <div class="gone" id="knn-explanation">
+
+            <div :class="{gone:selectedAlgorithm != 'KNN'}">
                 K-Nearest Neighbours is an algorithm used to solve classification problems.
                 <br><br>
                 The general step is as follows:
@@ -85,17 +100,32 @@
                     <li>Select the K-nearest data points to the to-be-predicted data point.</li>
                     <li>Classify the to-be-predicted data point by looking at the majority of the K-nearest neighbours.</li>
                 </ol>
+                <div>
+                    <br>
+                    <p>
+                        Number of neighbours:
+                        <input v-model.number="KNNk" type="number" @change="updateKNNParameter()">
+                    </p>
+                </div>
             </div>
         </div>
-        <div class="data-container">
+
+        <div class="data-container" id="vue-dataset">
+            <!-- <button @click="getColumns">Click</button> -->
             <input type="text" name="dataname" id="dataname" value="sample_data.csv" readonly />
             <div>This .csv file contains <span id="readColumns">0</span> columns and <span id="readRows">0</span> rows.</div>
             <div class="callout">
                 <span id="info"></span>
                 <div>Set up the graph by selecting two columns:
                     <ul>
-                        <li><input id="x-col" onchange="checkValidColumn()" placeholder="Column for X-axis"/></li>
-                        <li><input id="y-col" onchange="checkValidColumn()" placeholder="Column for Y-axis"/></li>
+                        <br>X-Axis:
+                        <select @change="setXAxis($event); updateAxis(); checkValidColumn()">
+                            <option v-for="column in columnNames" :value="column">{{ column }}</option>
+                        </select>
+                        <br>Y-Axis:
+                        <select @change="setYAxis($event); updateAxis(); checkValidColumn()">
+                            <option v-for="column in columnNames" :value="column">{{ column }}</option>
+                        </select>
                     </ul>
                     <span id="error"></span>
                 </div>
@@ -107,26 +137,131 @@
         </div>
     </div>
 
+    <div class="line"></div>
+
+    <div class="information-container">
+        <div class="information">
+            <h1>What is This Website?</h1>
+            <p>This website is intended to help people in <b>visualizing</b> basic Machine Learning algorithms, such as Linear Regression and K-Nearest Neighbours.</p>
+        </div>
+        <div class="information">
+            <h1>How to use This Website?</h1>
+            <p>
+                To use this website you can upload your own data or click the graph to insert point into the graph.
+            </p>
+            <br>
+            <h2>Upload your own data</h2>
+            <ol class="outside">
+                <img class="instructions" src="./assets/instruction1.png" alt="Instruction01">
+                <li>Set the dataset, you can either upload your own dataset or use the default data.</li>
+                <br><br>
+                <img class="instructions" src="./assets/instruction2.png" alt="Instruction02">
+                <li>Mess around with the graph using one of the provided tool, try clicking on the graph to see what happens.</li>
+                <br><br>
+                <img class="instructions" src="./assets/instruction3.png" alt="Instruction03">
+                <li>Select which algorithm you want to visualize.</li>
+                <img class="instructions" src="./assets/instruction4.png" alt="Instruction04">
+                <li>Mess with the parameter and see what changes.</li>
+            </ol>
+        </div>
+        <div class="information">
+            <h1>Linear Regression</h1>
+            <h2>What is Linear Regression?</h2>
+            <p>Linear Regression is an algorithm to solve <b>regression, curve-fitting problems</b>.
+                Essentially, given a set of datapoints, we want to know a line \(y=ax+b\) that best fits the
+                data, as in having the least distance to all datapoints. Using this line, we will
+                be able to predict numerical values. For instance, given a data about the prices of
+                a house over the years, we will predict the future price of a house.
+            </p>
+            <img class="visualization" src="assets/ErrorLinregIllust.gif" alt="What Linear Regression Looks Like" title="What Linear Regression Looks Like"/>
+            <p>
+                How do we know a line is good? We can use the error functions, such as the following:
+                $$E = \sum_{i=0}^n (y_i - \bar{y_i})^2, \text{where }\bar{y_i}=ax_i+b$$
+                The difference between \(y_i\) and \(\bar{y_i}\) indicates the error between the actual value \(y\) and
+                the predicted value \(\bar{y_i}\). There are also other error functions, such as the Mean Absolute Error
+                (MAE), Mean Squared Error (MSE), etc. Naturally, it would be better to have less errors,
+                so we aim to lessen such errors (the total length of the blue lines).
+            </p>
+            <h2 class="notfirst">Partial Derivative Equals Zero</h2>
+            <p>
+                First of all, we will use the error function that was mentioned first previously. 
+                Through the process of variable substitution and deriving the error function, we will 
+                obtain these formulas in return:
+                $$a=\frac{N(\Sigma x_j y_j) - (\Sigma x_j)(\Sigma y_j)}{N (\Sigma {x_j}^2) - (\Sigma x_j)^2}$$
+                $$b=\frac{(\Sigma y_j - a(\Sigma x_j))}{N}$$
+                By just simply plugging in the values, we can immediately obtain the line equation.
+                However, this method is not the best method to be used. In the next section, we will discuss
+                a much better alternative.
+            </p>
+            <h2 class="notfirst">Gradient Descent</h2>
+            <img class="visualization" src="assets/GradientDescentIllust.gif" alt="What Gradient Descent Looks Like" title="What Gradient Descent Looks Like"/>
+            <p>
+                Since the MSE function technically forms a quadratic equation when we substitute \(\bar{y_i}\),
+                $$E = \frac{1}{n}\sum_{i=0}^n (y_i - \bar{(ax_i + b)})^2$$
+                we can identify the lowest point of the graph, where the line yields the least error. However, to do this,
+                we must <i>gradually make descending steps</i> throughout the gradients, hence the name.
+                Though, how do we exactly do this? How large a step needs to be? How do we know when to stop? 
+            </p>
+            <p class="notfirst">
+                <ol class="outside">
+                    <li>First, we start by initiallizing some random values for \(a\) and \(b\).</li>
+                    <li>Calculate the errors yielded by the line using these formulas, which are obtained through partial derivatives:
+                        $$E_a = -\frac{2}{n} \sum_{i=0}^n (x_i)(y_i - \bar{y_i})$$
+                        $$E_b = -\frac{2}{n} \sum_{i=0}^n (y_i - \bar{y_i})$$
+                    </li>
+                    <li>Calculate the size of the descending step that we will make:
+                        $$\text{Step Size} = \| L \times E_a \|$$
+                    </li>
+                    <li>Update the values for both gradient \(a\) and intercept \(b\) based on the errors.
+                        Here, the \(L\) represents the Learning Rate. We could use \(0.1\) as the Learning Rate.
+                        $$a \rightarrow a - E_a \times L$$
+                        $$b \rightarrow b - E_b \times L$$
+                    </li>
+                    <li>We will repeat <b>Step 2</b> to <b>Step 4</b> until the step size becomes smaller than
+                        a pre-defined threshold (e.g. \(0.001\)) or enough iterations has been done.
+                    </li>
+                    <li>At this point, the gradient \(a\) and intercept \(b\) should have gone through enough number of descends
+                        to converge (or at least approach) to the best line that yields the least error.
+                    </li>
+                </ol>
+            </p>
+        </div>
+        <div class="information">
+            <h1>What is K-Nearest Neighbours?</h1>
+            <p>K-Nearest Neighbours (KNN) is an algorithm to solve <b>classification problems</b>. 
+                For instance, we want to classify which animal is contained within an image.
+                The general step is as follows:
+                <ol class="outside">
+                    <li>Select a K value.</li>
+                    <li>Calculate the distance between the to-be-predicted data point and all known data points.</li>
+                    <li>Select the K-nearest data points to the to-be-predicted data point.</li>
+                    <li>Classify the to-be-predicted data point by looking at the majority of the K-nearest neighbours.</li>
+                </ol>
+            </p>
+        </div>
+    </div>
+
     <div class="modal" id="uploadmodal">
         <nav>
             <button onclick="closeModal()">Close</button>
-        </nav>        
+        </nav>
         <div>
             <form id="upload">
+                It is recommended to upload file with around 100 lines.
                 <input type="file" name="input" id="input" onchange="upload()" accept=".csv"/>
             </form>
         </div>
     </div>
 
-    <div class="modal" id="downloadmodal">
+    <!-- <div class="modal" id="downloadmodal">
         <nav>
             <button onclick="closeModal()">Close</button>
-        </nav>        
+        </nav>
         <div>
             <textarea id="result" placeholder="After a .csv has been uploaded and modified, the resulting .csv that is able to be copy and pasted will appear here." readonly>
             </textarea>
         </div>
-    </div>
+    </div> -->
 
 </body>
 

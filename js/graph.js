@@ -1,33 +1,16 @@
 window.myChart = document.getElementById('myChart').getContext('2d');
 
+var graphKNNk = 3;
+var graphKNNStartIndex = 4;
+
 var draggableChart = new Chart(window.myChart, {
     data: {
         datasets: [{
-            type: 'scatter',
-            data: [{x: 1,y: 1}, {x: 2,y: 2}, {x: 3,y: 3}, {x: 4,y: 4}, {x: 5,y: 5}],
-            fill: false,
-            tension: 0.4,
-            borderWidth: 1,
-            pointRadius: 4.5, 
-            pointHitRadius: 10, // for improved touch support
-            borderColor: '#FF0000',
-            label: 'Data Point'
-        },{
+            label: 'Regression Line',
             type: 'line',
-            data: [{x: 0,y: 0}, {x: 0,y: 0}],
-            dragData: false, // prohibit dragging this dataset
             pointRadius: 0,
-            label: 'Regression Line'
-        },{
-            hidden: false,
-            type: 'scatter',
-            data: [{x: 11,y: 11}, {x: 12,y: 12}, {x: 13,y: 13}, {x: 14,y: 14}, {x: 15,y: 15}],
-            fill: false,
-            tension: 0.4,
-            borderWidth: 1,
-            pointRadius: 4.5, 
-            pointHitRadius: 10, // for improved touch support
-            borderColor: '#0000FF' 
+            data: [{x: 0,y: 0}, {x: 0,y: 0}],
+            dragData: false // prohibit dragging this dataset
         },{
             name: 'knnPointer',
             type: 'scatter',
@@ -35,26 +18,26 @@ var draggableChart = new Chart(window.myChart, {
             data: [],
             dragData: false
         },{
-            name: 'knnLine1',
-            type: 'line',
-            data: [{x: 0,y: 0}, {x: 0,y: 0}],
-            dragData: false,
-            pointRadius: 0,
-            borderWidth: 1
+            label: 'Red Data Point',
+            type: 'scatter',
+            pointRadius: 4.5, 
+            data: [{x: 7, y: 1}, {x: 2, y: 12}, {x: 14, y: 11}, {x: 17, y: 8}, {x: 13, y: 8}, {x: 15, y: 23}, {x: 20, y: 7}, {x: 18, y: 21}, {x: 22, y: 7}],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 1,
+            pointHitRadius: 10, // for improved touch support
+            borderColor: '#FF0000'
         },{
-            name: 'knnLine2',
-            type: 'line',
-            data: [{x: 0,y: 0}, {x: 0,y: 0}],
-            dragData: false,
-            pointRadius: 0,
-            borderWidth: 1
-        },{
-            name: 'knnLine3',
-            type: 'line',
-            data: [{x: 0,y: 0}, {x: 0,y: 0}],
-            dragData: false,
-            pointRadius: 0,
-            borderWidth: 1
+            label: "Blue Data Point",
+            hidden: false,
+            type: 'scatter',
+            pointRadius: 4.5, 
+            data: [{x: 4, y: 17}, {x: 16, y: 14}, {x: 4, y: 1}, {x: 12, y: 18}, {x: 9, y: 10}, {x: 2, y: 4}, {x: 6, y: 15}, {x: 2, y: 15}, {x: 8, y: 3}],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 1,
+            pointHitRadius: 10, // for improved touch support
+            borderColor: '#0000FF'
         }]
     },
     options: {
@@ -62,6 +45,9 @@ var draggableChart = new Chart(window.myChart, {
             y: {
                 max: 25,
                 min: 0,
+                ticks: {
+                    precision: 0
+                }
                 // dragData: false // disables datapoint dragging for the entire axis
             },
             x: {
@@ -76,22 +62,16 @@ var draggableChart = new Chart(window.myChart, {
             let canvasPosition = Chart.helpers.getRelativePosition(e, draggableChart);
             let x = draggableChart.scales.x.getValueForPixel(canvasPosition.x);
             let y = draggableChart.scales.y.getValueForPixel(canvasPosition.y);
-            console.log(x, y);
+            // console.log(x, y);
             if(element.length > 0){
                 lastClickedElement = element[0];
-                let dataX = document.getElementById('dataX');
-                let dataY = document.getElementById('dataY');
+                // let dataX = document.getElementById('dataX');
+                // let dataY = document.getElementById('dataY');
                 let datasetIndex = lastClickedElement.datasetIndex;
                 let index = lastClickedElement.index;
-
                 if(toolMode === 'delete'){
                     if (index > -1) {
                         draggableChart.data.datasets[datasetIndex].data.splice(index, 1);
-                        if(datasetIndex === 3){
-                            draggableChart.data.datasets[4].data = [];
-                            draggableChart.data.datasets[5].data = [];
-                            draggableChart.data.datasets[6].data = [];
-                        }
                         draggableChart.update();
                     }
                 }
@@ -99,18 +79,17 @@ var draggableChart = new Chart(window.myChart, {
                     dataX.value = draggableChart.data.datasets[datasetIndex].data[index].x.toFixed(1);
                     dataY.value = draggableChart.data.datasets[datasetIndex].data[index].y.toFixed(1);
                 }
-
             }
             else{
-                dataX.value = 'NaN';
-                dataY.value = 'NaN';
+                // dataX.value = 'NaN';
+                // dataY.value = 'NaN';
                 lastClickedElement = NaN;
 
                 if(toolMode == 'drawRed'){
-                    addData(0, x, y);
+                    addData(2, x, y);
                 }
                 else if(toolMode == 'drawBlue'){
-                    addData(2, x, y);
+                    addData(3, x, y);
                 }
                 else if(toolMode == 'KNN'){
                     knn_predict(x, y);
@@ -132,6 +111,8 @@ var draggableChart = new Chart(window.myChart, {
                 dragX: true, // also enable dragging along the x-axis.
                 // this solely works for continous, numerical x-axis scales (no categories or dates)!
                 onDragStart: function (e, element) {
+                    if(toolMode !== 'view')
+                        return false;
                     /*
                     // e = event, element = datapoint that was dragged
                     // you may use this callback to prohibit dragging certain datapoints

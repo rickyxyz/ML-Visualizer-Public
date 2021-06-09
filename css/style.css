@@ -1,12 +1,16 @@
 * {
     padding: none;
     margin: none;
-    overflow: hidden;
 }
 
 @font-face {
     font-family: 'Gilroy-Bold';
-    src: url('./Gilroy-ExtraBold.otf');
+    src: url('../fonts/Gilroy-ExtraBold.otf');
+}
+
+@font-face {
+    font-family: 'Gilroy';
+    src: url('../fonts/Gilroy-Light.otf');
 }
 
 @keyframes active {
@@ -56,7 +60,7 @@ nav a:hover, nav button:hover {
     cursor: pointer;
 }
 
-.active-menu {
+.activeMenu {
     background-color: #e8710a;
 }
 
@@ -92,7 +96,7 @@ nav a:hover, nav button:hover {
     color: white;
 }
 
-.active-tool {
+.activeTool {
     border: 1px solid #e8710a !important;
     color: white !important;
     background-color: #e8710a !important;
@@ -151,6 +155,12 @@ button#download:before{
 
 button#clear:before{
     content:"\f00d";
+    margin: 0px 8px;
+    font-family: FontAwesome;
+}
+
+button#loadDefault:before{
+    content:"\f0ce";
     margin: 0px 8px;
     font-family: FontAwesome;
 }
@@ -359,6 +369,23 @@ table tr:first-child, table tr:first-child:hover {
     color: white;
 }
 
+/* Linear regression pane */
+/* Chrome, Safari, Edge, Opera */
+.linearRegressionInput input::-webkit-outer-spin-button,
+.linearRegressionInput input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.linearRegressionInput input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.buttonMargin button {
+    margin-top: 10px;
+}
+
 /* UPLOAD AND DOWNLOAD MODAL */
 
 .modal {
@@ -413,4 +440,72 @@ table tr:first-child, table tr:first-child:hover {
     outline: none;
     resize: none;
     overflow-y: scroll;
+}
+
+
+/* styling for information section */
+.line{
+    height: 1.5px;
+    background-color: #CDCDCD;
+    width: 96%;
+    margin-left: 2%;
+}
+
+.information-container{
+    padding: 20px 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.information-container .information{
+    /* background-color: #CDCDCD; */
+    margin: 40px 0px;
+    width: 100%;
+}
+
+.information-container .information h1{
+    font-family: 'Gilroy';
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 40px;
+}
+
+.information-container .information h2{
+    font-family: 'Gilroy';
+    font-weight: 600;
+    font-size: 20px;
+    text-transform: none;
+}
+
+ol.outside {
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+ol.outside li:not(:first-child) {
+    margin-top: 16px;
+}
+
+ol.outside li:before {
+    margin-left: -20px;
+}
+
+.information-container .information p{
+    line-height: 1.6;
+}
+
+.notfirst{
+    margin-top: 32px!important;
+}
+
+img.visualization {
+    display: block;
+    margin: 0 auto;
+}
+
+img.instructions {
+    height: 380px;
+    width: auto;
 }
